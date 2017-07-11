@@ -24,24 +24,30 @@ namespace Services
                 if (firstConfiguration)
                 {
                     firstConfiguration = false;
+                    Console.WriteLine("---List of All Migrations---");
                     foreach (var migration in migrator.GetDatabaseMigrations())
                     {
                         Console.WriteLine($"Migration: {migration}");
                     }
+                    Console.WriteLine();
+                    Console.WriteLine("---Pending Migration---");
                 }
 
-                Console.WriteLine($"Pending migrations for Assembly {configuration.MigrationsAssembly.GetName().Name}");
+                var pendingMigrations = migrator.GetPendingMigrations();
 
-                foreach (var pendingMigration in migrator.GetPendingMigrations())
+                Console.WriteLine($"{pendingMigrations.Count()} Pending migrations for Assembly {configuration.MigrationsAssembly.GetName().Name}");
+
+                foreach (var pendingMigration in pendingMigrations)
                 {
-                    Console.WriteLine($"----{pendingMigration}");
+                    if (testOnly) { Console.Write("\t{0} pending", pendingMigration); }
                     if (!testOnly)
                     {
                         string typeName = configuration.MigrationsNamespace + "." + pendingMigration.Split('_').Last();
                         var type = configuration.MigrationsAssembly.GetType(typeName);
-                        Console.WriteLine(type);
                         migrator.Update(pendingMigration);
+                        Console.Write("\t{0} applied", type);
                     }
+                    Console.WriteLine();
                 }
             }
         }
