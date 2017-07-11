@@ -14,7 +14,7 @@ namespace Services
 {
     public class MigrationService
     {
-        public static void Migrate()
+        public static void Migrate(bool testOnly = false)
         {
             bool firstConfiguration = true;
             foreach (var configuration in GetMigrationConfigurations())
@@ -35,33 +35,39 @@ namespace Services
                 foreach (var pendingMigration in migrator.GetPendingMigrations())
                 {
                     Console.WriteLine($"----{pendingMigration}");
-                    migrator.Update(pendingMigration);
+                    if (!testOnly)
+                    {
+                        string typeName = configuration.MigrationsNamespace + "." + pendingMigration.Split('_').Last();
+                        var type = configuration.MigrationsAssembly.GetType(typeName);
+                        Console.WriteLine(type);
+                        migrator.Update(pendingMigration);
+                    }
                 }
             }
         }
 
-        private static List<Configuration> GetMigrationConfigurations()
+        private static List<MigrationsLibrary.Migrations.Configuration> GetMigrationConfigurations()
         {
-            List<Configuration> configurations = new List<Configuration>();
+            List<MigrationsLibrary.Migrations.Configuration> configurations = new List<MigrationsLibrary.Migrations.Configuration>();
             var dbConnectionInfo = new DbConnectionInfo("StuffContext");
 
-            configurations.Add(new Configuration()
+            configurations.Add(new MigrationsLibrary.Migrations.Configuration()
             {
                 MigrationsAssembly = Assembly.GetAssembly(typeof(Alpha)),
                 MigrationsNamespace = "MigrationsLibrary.Migrations",
                 TargetDatabase = dbConnectionInfo
             });
 
-            configurations.Add(new Configuration()
+            configurations.Add(new MigrationsLibrary.Migrations.Configuration()
             {
                 MigrationsAssembly = Assembly.GetAssembly(typeof(Bravo)),
                 MigrationsNamespace = "MigrationsLibrary.Migrations",
                 TargetDatabase = dbConnectionInfo
             });
 
-            configurations.Add(new Configuration()
+            configurations.Add(new MigrationsLibrary.Migrations.Configuration()
             {
-                MigrationsAssembly = Assembly.GetAssembly(typeof(Configuration)),
+                MigrationsAssembly = Assembly.GetAssembly(typeof(MigrationsLibrary.Migrations.Configuration)),
                 MigrationsNamespace = "MigrationsLibrary.Migrations",
                 TargetDatabase = dbConnectionInfo
             });

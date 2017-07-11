@@ -16,11 +16,7 @@ namespace ConsoleApp
         {
             try
             {
-                //using (var context = new Services.StuffContext())
-                //{
-                //    var x = context.Dodads.FirstOrDefault();
-                //}
-                MigrationService.Migrate();
+                MigrationService.Migrate(testOnly: true);
             }
             catch (Exception ex)
             {
